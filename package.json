@@ -1,0 +1,70 @@
+{
+  "name": "electron-buff",
+  "version": "1.0.0",
+  "description": "Electron enhancement utilities for electron-vite projects",
+  "exports": {
+    "./xpc/main": {
+      "require": {
+        "types": "./dist/xpc/main/index.d.ts",
+        "default": "./dist/xpc/main/index.js"
+      },
+      "import": {
+        "types": "./dist/xpc/main/index.d.mts",
+        "default": "./dist/xpc/main/index.mjs"
+      }
+    },
+    "./xpc/preload": {
+      "require": {
+        "types": "./dist/xpc/preload/index.d.ts",
+        "default": "./dist/xpc/preload/index.js"
+      },
+      "import": {
+        "types": "./dist/xpc/preload/index.d.mts",
+        "default": "./dist/xpc/preload/index.mjs"
+      }
+    },
+    "./pathHelper/main": {
+      "require": {
+        "types": "./dist/pathHelper/main/index.d.ts",
+        "default": "./dist/pathHelper/main/index.js"
+      },
+      "import": {
+        "types": "./dist/pathHelper/main/index.d.mts",
+        "default": "./dist/pathHelper/main/index.mjs"
+      }
+    },
+    "./pathHelper/renderer": {
+      "require": {
+        "types": "./dist/pathHelper/renderer/index.d.ts",
+        "default": "./dist/pathHelper/renderer/index.js"
+      },
+      "import": {
+        "types": "./dist/pathHelper/renderer/index.d.mts",
+        "default": "./dist/pathHelper/renderer/index.mjs"
+      }
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "prepublishOnly": "yarn build",
+    "publish:npm": "npm publish --registry=https://registry.npmjs.org/"
+  },
+  "peerDependencies": {
+    "electron": ">=20.0.0",
+    "rig-foundation": ">=1.0.0"
+  },
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org/"
+  },
+  "devDependencies": {
+    "tsup": "^8.0.0",
+    "typescript": "^5.3.0"
+  },
+  "repository": "git@github.com:FlashHand/electron-buff.git",
+  "author": "WangBo <ralwayne@163.com>",
+  "license": "MIT"
+}

@@ -1,0 +1,48 @@
+import { defineConfig } from 'tsup';
+
+export default defineConfig([
+  {
+    entry: { index: 'src/xpc/main/index.ts' },
+    format: ['cjs', 'esm'],
+    dts: true,
+    splitting: false,
+    sourcemap: true,
+    clean: true,
+    outDir: 'dist/xpc/main',
+    treeshake: true,
+    external: ['electron', 'rig-foundation'],
+  },
+  {
+    entry: { index: 'src/xpc/preload/index.ts' },
+    format: ['cjs', 'esm'],
+    dts: true,
+    splitting: false,
+    sourcemap: true,
+    clean: false,
+    outDir: 'dist/xpc/preload',
+    treeshake: true,
+    external: ['electron', 'rig-foundation'],
+  },
+  {
+    entry: { index: 'src/pathHelper/main/index.ts' },
+    format: ['cjs', 'esm'],
+    dts: true,
+    splitting: false,
+    sourcemap: true,
+    clean: false,
+    outDir: 'dist/pathHelper/main',
+    treeshake: true,
+    external: ['electron'],
+  },
+  {
+    entry: { index: 'src/pathHelper/renderer/index.ts' },
+    format: ['cjs', 'esm'],
+    dts: true,
+    splitting: false,
+    sourcemap: true,
+    clean: false,
+    outDir: 'dist/pathHelper/renderer',
+    treeshake: true,
+    external: ['electron'],
+  },
+]);
