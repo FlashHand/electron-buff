@@ -1,6 +1,6 @@
 {
   "name": "electron-buff",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Electron enhancement utilities for electron-vite projects",
   "exports": {
     "./xpc/main": {
