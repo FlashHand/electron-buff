@@ -1,6 +1,11 @@
 # XPC — Cross-Process Communication
 
-XPC is a cross-process communication module for **electron-vite** projects. It enables seamless async messaging between renderer processes (via the main process as a hub), as well as direct main-to-renderer communication.
+XPC is a bidirectional async/await RPC module for **Electron** applications. Unlike Electron's built-in `ipcRenderer.invoke` / `ipcMain.handle`, which only supports renderer-to-main request–response, XPC enables **any process** (renderer or main) to call handlers registered in **any other process** with full `async/await` semantics — including renderer-to-renderer, main-to-renderer, and main-to-main invocations.
+
+## Advantages
+
+1. **Offload work to renderer processes** — Heavy or blocking tasks can be delegated to a preload script running in a hidden renderer window, keeping the main process responsive and reducing its performance overhead.
+2. **Unified async/await across all processes** — Since every inter-process call supports `async/await`, complex multi-step workflows that span multiple processes can be orchestrated with straightforward sequential logic, eliminating deeply nested callbacks or manual event coordination.
 
 ## Installation
 
@@ -30,6 +35,13 @@ Renderer A                    Main Process                   Renderer B
     |         execute handler      |                              |
     |   ---- __xpc_finish__ ---->  |                              |
     |                              |   ----> return result        |
+
+Main Process (xpcMain)
+    |                              |
+    |  handle(name, handler)       |  -- register in xpcCenter registry (id=0)
+    |  send(name, params) -------> |  -- delegates to xpcCenter.exec()
+    |                              |     if id=0: call local handler directly
+    |                              |     else: forward to renderer, block until finish
 ```
 
 ## Exports
@@ -39,7 +51,7 @@ Renderer A                    Main Process                   Renderer B
 | Export | Type | Description |
 |--------|------|-------------|
 | `xpcCenter` | `XpcCenter` | Singleton hub. Importing it registers all IPC listeners. |
-| `xpcMain` | `XpcMain` | Send messages from main to a specific renderer window. |
+| `xpcMain` | `XpcMain` | Register handlers in main process and send messages to any registered handler (main or renderer). |
 | `XpcTask` | `class` | Internal task wrapper with semaphore-based blocking. |
 | `XpcPayload` | `type` | `{ id, handleName, params?, ret? }` — serializable IPC payload. |
 
@@ -96,15 +108,30 @@ const result = await xpcRenderer.send('my/channel', { foo: 'bar' });
 console.log(result); // { message: 'Hello from Renderer A' }
 ```
 
-### 5. Send from Main to Renderer
+### 5. Register a Handler in Main Process
 
 ```ts
 import { xpcMain } from 'electron-buff/xpc/main';
 
-const result = await xpcMain.sendToRenderer(browserWindow, 'my/channel', { foo: 'bar' });
+xpcMain.handle('my/mainChannel', async (payload) => {
+  console.log('Received in main:', payload.params);
+  return { message: 'Hello from main process' };
+});
 ```
 
-### 6. Remove a Handler
+### 6. Send from Main Process
+
+```ts
+import { xpcMain } from 'electron-buff/xpc/main';
+
+// Send to a renderer-registered handler
+const result = await xpcMain.send('my/channel', { foo: 'bar' });
+
+// Send to a main-process-registered handler (calls directly, no IPC)
+const result2 = await xpcMain.send('my/mainChannel', { foo: 'bar' });
+```
+
+### 7. Remove a Handler
 
 ```ts
 xpcRenderer.removeHandle('my/channel');

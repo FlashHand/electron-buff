@@ -19,4 +19,5 @@ export type PathName =
 export type PathHelperApi = {
   getAppPath: () => Promise<string>;
   getPath: (name: PathName) => Promise<string>;
+  getUserDataPath: () => Promise<string>;
 };

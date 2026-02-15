@@ -1,6 +1,9 @@
 import { ipcMain, webContents } from 'electron';
 import { XpcPayload } from '../shared/xpc.type';
 import { XpcTask } from './xpc-task.helper';
+import { generateXpcId } from './xpc-id.helper';
+import { pathMainHelper } from '../../pathHelper/main/pathMain.helper';
+import { xpcMain } from './xpc-main.helper';
 
 const XPC_REGISTER = '__xpc_register__';
 const XPC_EXEC = '__xpc_exec__';
@@ -19,8 +22,66 @@ class XpcCenter {
   /** task.id → XpcTask (with semaphore block/unblock) */
   private pendingTasks = new Map<string, XpcTask>();
 
-  constructor() {
+  init(): void {
+    pathMainHelper.init();
     this.setupListeners();
+  }
+
+  /**
+   * Register a main-process handleName in the registry with webContentsId = 0.
+   */
+  registerMainHandler(handleName: string): void {
+    this.registry.set(handleName, 0);
+  }
+
+  /**
+   * Execute a handleName: if main-process handler, call directly;
+   * otherwise forward to target renderer, block until __xpc_finish__.
+   * Used by both ipcMain.handle(XPC_EXEC) and xpcMain.send().
+   */
+  async exec(handleName: string, params?: any): Promise<any> {
+    const targetId = this.registry.get(handleName);
+    if (targetId == null) {
+      return null;
+    }
+
+    const payload: XpcPayload = {
+      id: generateXpcId(),
+      handleName,
+      params,
+    };
+
+    // targetId === 0 means the handler is registered in the main process
+    if (targetId === 0) {
+      const handler = xpcMain.getHandler(handleName);
+      if (!handler) {
+        return null;
+      }
+      try {
+        return await handler(payload);
+      } catch (_e) {
+        return null;
+      }
+    }
+
+    const target = webContents.fromId(targetId);
+    if (!target || target.isDestroyed() || target.isCrashed()) {
+      return null;
+    }
+
+    // Create semaphore-blocked task
+    const task = new XpcTask(payload);
+
+    this.pendingTasks.set(task.id, task);
+
+    // Forward handleName event + payload to target renderer
+    target.send(handleName, payload);
+
+    // Block until __xpc_finish__ unblocks
+    await task.block();
+    this.pendingTasks.delete(task.id);
+
+    return task.toPayload().ret ?? null;
   }
 
   private setupListeners(): void {
@@ -29,31 +90,9 @@ class XpcCenter {
       this.registry.set(payload.handleName, event.sender.id);
     });
 
-    // Renderer invokes exec: forward to target renderer, block until finish
+    // Renderer invokes exec via IPC
     ipcMain.handle(XPC_EXEC, async (_event, payload: XpcPayload): Promise<any> => {
-      const targetId = this.registry.get(payload.handleName);
-      if (targetId == null) {
-        return null;
-      }
-
-      const target = webContents.fromId(targetId);
-      if (!target) {
-        return null;
-      }
-
-      // Create semaphore-blocked task
-      const task = new XpcTask(payload);
-
-      this.pendingTasks.set(task.id, task);
-
-      // Forward handleName event + payload to target renderer
-      target.send(payload.handleName, payload);
-
-      // Block until __xpc_finish__ unblocks
-      await task.block();
-      this.pendingTasks.delete(task.id);
-
-      return task.toPayload().ret ?? null;
+      return this.exec(payload.handleName, payload.params);
     });
 
     // Target renderer finished execution, unblock pending task

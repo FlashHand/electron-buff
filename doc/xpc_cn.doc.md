@@ -1,6 +1,11 @@
 # XPC — 跨进程通信
 
-XPC 是面向 **electron-vite** 项目的跨进程通信模块。支持渲染进程之间（通过主进程中转）的异步消息传递，以及主进程到渲染进程的直接通信。
+XPC 是面向 **Electron** 应用的双向异步 RPC 模块。不同于 Electron 内置的 `ipcRenderer.invoke` / `ipcMain.handle` 仅支持渲染进程到主进程的请求-响应模式，XPC 允许**任意进程**（渲染进程或主进程）以完整的 `async/await` 语义调用**任意其他进程**中注册的处理器——包括渲染进程间、主进程到渲染进程、以及主进程内部的调用。
+
+## 优点
+
+1. **将工作卸载到渲染进程** — 可以将耗时或阻塞性任务委托给隐藏窗口的渲染进程中的 preload 脚本执行，保持主进程的响应性，降低主进程的性能开销。
+2. **任意进程间统一的 async/await 语义** — 由于所有跨进程调用均支持 `async/await`，跨多个进程的复杂多步作业流程可以用简洁的顺序逻辑编排，无需深层嵌套回调或手动事件协调。
 
 ## 安装
 
@@ -30,6 +35,13 @@ import { xpcRenderer, exposeXpcRenderer } from 'electron-buff/xpc/preload';
     |         执行 handler         |                              |
     |   ---- __xpc_finish__ ---->  |                              |
     |                              |   ----> 返回结果             |
+
+主进程 (xpcMain)
+    |                              |
+    |  handle(name, handler)       |  -- 注册到 xpcCenter registry (id=0)
+    |  send(name, params) -------> |  -- 委托给 xpcCenter.exec()
+    |                              |     id=0: 直接调用本地 handler
+    |                              |     否则: 转发到渲染进程，阻塞等待完成
 ```
 
 ## 导出
@@ -39,7 +51,7 @@ import { xpcRenderer, exposeXpcRenderer } from 'electron-buff/xpc/preload';
 | 导出 | 类型 | 说明 |
 |------|------|------|
 | `xpcCenter` | `XpcCenter` | 单例中心。导入即注册所有 IPC 监听器。 |
-| `xpcMain` | `XpcMain` | 从主进程向指定渲染窗口发送消息。 |
+| `xpcMain` | `XpcMain` | 在主进程中注册处理器，并向任意已注册的处理器（主进程或渲染进程）发送消息。 |
 | `XpcTask` | `class` | 内部任务封装，基于信号量阻塞。 |
 | `XpcPayload` | `type` | `{ id, handleName, params?, ret? }` — 可序列化的 IPC 载荷。 |
 
@@ -96,15 +108,30 @@ const result = await xpcRenderer.send('my/channel', { foo: 'bar' });
 console.log(result); // { message: '来自渲染进程 A 的问候' }
 ```
 
-### 5. 从主进程发送到渲染进程
+### 5. 在主进程中注册处理器
 
 ```ts
 import { xpcMain } from 'electron-buff/xpc/main';
 
-const result = await xpcMain.sendToRenderer(browserWindow, 'my/channel', { foo: 'bar' });
+xpcMain.handle('my/mainChannel', async (payload) => {
+  console.log('主进程收到:', payload.params);
+  return { message: '来自主进程的问候' };
+});
 ```
 
-### 6. 移除处理器
+### 6. 从主进程发送消息
+
+```ts
+import { xpcMain } from 'electron-buff/xpc/main';
+
+// 发送到渲染进程注册的处理器
+const result = await xpcMain.send('my/channel', { foo: 'bar' });
+
+// 发送到主进程注册的处理器（直接调用，无需 IPC）
+const result2 = await xpcMain.send('my/mainChannel', { foo: 'bar' });
+```
+
+### 7. 移除处理器
 
 ```ts
 xpcRenderer.removeHandle('my/channel');
