@@ -19,6 +19,11 @@ export type { XpcRendererApi } from '../shared/xpc.type';
  * the payload to this renderer, the handler executes, and result is sent back via __xpc_finish__.
  */
 const handle = (handleName: string, handler: XpcHandler): void => {
+  // Remove existing listener to prevent stacking when the same handleName is re-registered
+  if (xpcHandlers.has(handleName)) {
+    ipcRenderer.removeAllListeners(handleName);
+  }
+
   xpcHandlers.set(handleName, handler);
 
   // Notify main process about this registration

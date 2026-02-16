@@ -1,6 +1,6 @@
 {
   "name": "electron-buff",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "description": "Electron enhancement utilities for electron-vite projects",
   "exports": {
     "./xpc/main": {
@@ -116,5 +116,10 @@
   },
   "repository": "git@github.com:FlashHand/electron-buff.git",
   "author": "WangBo <ralwayne@163.com>",
-  "license": "MIT"
+  "license": "MIT",
+  "keywords": [
+    "ipc",
+    "async/await",
+    "renderer to renderer"
+  ]
 }

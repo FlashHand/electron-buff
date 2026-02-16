@@ -160,6 +160,10 @@ var XpcCenter = class {
   }
   setupListeners() {
     ipcMain.on(XPC_REGISTER, (event, payload) => {
+      const existingId = this.registry.get(payload.handleName);
+      if (existingId != null && existingId !== event.sender.id) {
+        console.log(`[xpcCenter] handler "${payload.handleName}" overwritten: webContentsId ${existingId} \u2192 ${event.sender.id}`);
+      }
       this.registry.set(payload.handleName, event.sender.id);
     });
     ipcMain.handle(XPC_EXEC, async (_event, payload) => {

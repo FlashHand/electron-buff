@@ -85,8 +85,12 @@ class XpcCenter {
   }
 
   private setupListeners(): void {
-    // Renderer registers a handleName
+    // Renderer registers a handleName (overwrites previous registration for the same handleName)
     ipcMain.on(XPC_REGISTER, (event, payload: { handleName: string }) => {
+      const existingId = this.registry.get(payload.handleName);
+      if (existingId != null && existingId !== event.sender.id) {
+        console.log(`[xpcCenter] handler "${payload.handleName}" overwritten: webContentsId ${existingId} → ${event.sender.id}`);
+      }
       this.registry.set(payload.handleName, event.sender.id);
     });
 

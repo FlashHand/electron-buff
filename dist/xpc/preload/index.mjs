@@ -15,6 +15,9 @@ var XPC_EXEC = "__xpc_exec__";
 var XPC_FINISH = "__xpc_finish__";
 var xpcHandlers = /* @__PURE__ */ new Map();
 var handle = (handleName, handler) => {
+  if (xpcHandlers.has(handleName)) {
+    ipcRenderer.removeAllListeners(handleName);
+  }
   xpcHandlers.set(handleName, handler);
   ipcRenderer.send(XPC_REGISTER, { handleName });
   ipcRenderer.on(handleName, async (_event, payload) => {

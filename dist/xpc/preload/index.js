@@ -17,6 +17,9 @@ var XPC_EXEC = "__xpc_exec__";
 var XPC_FINISH = "__xpc_finish__";
 var xpcHandlers = /* @__PURE__ */ new Map();
 var handle = (handleName, handler) => {
+  if (xpcHandlers.has(handleName)) {
+    electron.ipcRenderer.removeAllListeners(handleName);
+  }
   xpcHandlers.set(handleName, handler);
   electron.ipcRenderer.send(XPC_REGISTER, { handleName });
   electron.ipcRenderer.on(handleName, async (_event, payload) => {
