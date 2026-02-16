@@ -2,17 +2,17 @@
 
 Electron enhancement utilities for electron-vite projects.
 
-## Modules
-
-| Module | Description | Documentation |
-|--------|-------------|---------------|
-| **XPC** | **Async/await** style cross-process communication | [English](./doc/xpc.doc.md) \| [中文](./doc/xpc_cn.doc.md) |
-
 ## Install
 
 ```bash
 yarn add electron-buff
 ```
+
+## Modules
+
+| Module | Description | Documentation |
+|--------|-------------|---------------|
+| **XPC** | **Async/await** style cross-process communication | [English](./doc/xpc.doc.md) \| [中文](./doc/xpc_cn.doc.md) |
 
 
 ## Module Overview
