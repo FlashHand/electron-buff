@@ -4,7 +4,7 @@ XPC 是面向 **Electron** 应用的双向异步 RPC 模块。不同于 Electron
 
 ## 优点
 
-1. **将工作卸载到渲染进程** — 可以将耗时或阻塞性任务委托给隐藏窗口的渲染进程中的 preload 脚本执行，保持主进程的响应性，降低主进程的性能开销。
+1. **将工作分配到渲染进程** — 可以将耗时或阻塞性任务委托给隐藏窗口的渲染进程中的 preload 脚本执行，保持主进程的响应性，降低主进程的性能开销。
 2. **任意进程间统一的 async/await 语义** — 由于所有跨进程调用均支持 `async/await`，跨多个进程的复杂多步作业流程可以用简洁的顺序逻辑编排，无需深层嵌套回调或手动事件协调。
 
 ## 安装
@@ -72,8 +72,7 @@ import { xpcRenderer, exposeXpcRenderer } from 'electron-buff/xpc/preload';
 // src/main/index.ts
 import { xpcCenter } from 'electron-buff/xpc/main';
 
-// xpcCenter 是单例 — 导入即注册所有 __xpc__ ipcMain 监听器。
-void xpcCenter;
+xpcCenter.init();
 ```
 
 ### 2. 在 Preload 脚本中暴露

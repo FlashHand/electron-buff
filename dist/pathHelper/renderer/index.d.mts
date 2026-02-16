@@ -5,19 +5,10 @@ type PathHelperApi = {
     getUserDataPath: () => Promise<string>;
 };
 
-declare class PathRendererHelper {
-    /** Get the app installation path */
-    getAppPath(): Promise<string>;
-    /** Get a special directory or file path by name */
-    getPath(name: PathName): Promise<string>;
-    /** Get the user data path (e.g. Application Support on macOS, Roaming on Windows) */
-    getUserDataPath(): Promise<string>;
-}
-declare const pathRendererHelper: PathRendererHelper;
 /**
- * Returns a contextBridge-safe object for exposeInMainWorld.
- * Usage: contextBridge.exposeInMainWorld('pathHelper', exposePathHelper())
+ * Direct reference to window.pathHelper exposed by the preload script.
+ * Import this in renderer (browser) code to use pathHelper without manual window casting.
  */
-declare const exposePathHelper: () => PathHelperApi;
+declare const pathHelper: PathHelperApi;
 
-export { type PathHelperApi, type PathName, exposePathHelper, pathRendererHelper };
+export { type PathHelperApi, type PathName, pathHelper };

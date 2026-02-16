@@ -8,3 +8,9 @@ export type XpcPayload = {
   /** Return data from target process, nullable, defaults to null */
   ret?: any;
 };
+
+export type XpcRendererApi = {
+  handle: (handleName: string, handler: (payload: XpcPayload) => Promise<any>) => void;
+  removeHandle: (handleName: string) => void;
+  send: (handleName: string, params?: any) => Promise<any>;
+};

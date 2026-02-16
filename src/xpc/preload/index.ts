@@ -1,3 +1,3 @@
-export { xpcRenderer, exposeXpcRenderer } from './xpc-renderer.helper';
-export type { XpcRendererApi } from './xpc-renderer.helper';
+export { xpcRenderer, xpcHandlers } from './xpcPreload.helper';
+export type { XpcRendererApi } from './xpcPreload.helper';
 export type { XpcPayload } from '../shared/xpc.type';

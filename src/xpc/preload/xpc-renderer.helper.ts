@@ -98,4 +98,5 @@ export const exposeXpcRenderer = (): XpcRendererApi => {
       return xpcRenderer.send(handleName, params);
     },
   };
+
 };

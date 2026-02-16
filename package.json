@@ -1,6 +1,6 @@
 {
   "name": "electron-buff",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Electron enhancement utilities for electron-vite projects",
   "exports": {
     "./xpc/main": {
@@ -23,6 +23,16 @@
         "default": "./dist/xpc/preload/index.mjs"
       }
     },
+    "./xpc/renderer": {
+      "require": {
+        "types": "./dist/xpc/renderer/index.d.ts",
+        "default": "./dist/xpc/renderer/index.js"
+      },
+      "import": {
+        "types": "./dist/xpc/renderer/index.d.mts",
+        "default": "./dist/xpc/renderer/index.mjs"
+      }
+    },
     "./pathHelper/main": {
       "require": {
         "types": "./dist/pathHelper/main/index.d.ts",
@@ -33,6 +43,16 @@
         "default": "./dist/pathHelper/main/index.mjs"
       }
     },
+    "./pathHelper/preload": {
+      "require": {
+        "types": "./dist/pathHelper/preload/index.d.ts",
+        "default": "./dist/pathHelper/preload/index.js"
+      },
+      "import": {
+        "types": "./dist/pathHelper/preload/index.d.mts",
+        "default": "./dist/pathHelper/preload/index.mjs"
+      }
+    },
     "./pathHelper/renderer": {
       "require": {
         "types": "./dist/pathHelper/renderer/index.d.ts",
@@ -41,6 +61,36 @@
       "import": {
         "types": "./dist/pathHelper/renderer/index.d.mts",
         "default": "./dist/pathHelper/renderer/index.mjs"
+      }
+    },
+    "./packageHelper/main": {
+      "require": {
+        "types": "./dist/packageHelper/main/index.d.ts",
+        "default": "./dist/packageHelper/main/index.js"
+      },
+      "import": {
+        "types": "./dist/packageHelper/main/index.d.mts",
+        "default": "./dist/packageHelper/main/index.mjs"
+      }
+    },
+    "./packageHelper/preload": {
+      "require": {
+        "types": "./dist/packageHelper/preload/index.d.ts",
+        "default": "./dist/packageHelper/preload/index.js"
+      },
+      "import": {
+        "types": "./dist/packageHelper/preload/index.d.mts",
+        "default": "./dist/packageHelper/preload/index.mjs"
+      }
+    },
+    "./packageHelper/renderer": {
+      "require": {
+        "types": "./dist/packageHelper/renderer/index.d.ts",
+        "default": "./dist/packageHelper/renderer/index.js"
+      },
+      "import": {
+        "types": "./dist/packageHelper/renderer/index.d.mts",
+        "default": "./dist/packageHelper/renderer/index.mjs"
       }
     }
   },

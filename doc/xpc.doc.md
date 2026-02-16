@@ -72,8 +72,7 @@ Main Process (xpcMain)
 // src/main/index.ts
 import { xpcCenter } from 'electron-buff/xpc/main';
 
-// xpcCenter is a singleton — importing it registers all __xpc__ ipcMain listeners.
-void xpcCenter;
+xpcCenter.init();
 ```
 
 ### 2. Expose in Preload Script
