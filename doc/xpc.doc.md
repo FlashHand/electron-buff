@@ -4,7 +4,7 @@ XPC is a bidirectional async/await RPC module for **Electron** applications. Unl
 
 ## Advantages
 
-1. **Offload work to renderer processes** — Heavy or blocking tasks can be delegated to a preload script running in a hidden renderer window, keeping the main process responsive and reducing its performance overhead.
+1. **Offload work to renderer processes** — Heavy or blocking tasks can be delegated to renderer processes, keeping the main process responsive and reducing its performance overhead.
 2. **Unified async/await across all processes** — Since every inter-process call supports `async/await`, complex multi-step workflows that span multiple processes can be orchestrated with straightforward sequential logic, eliminating deeply nested callbacks or manual event coordination.
 
 ## Usage A: Hard-coded send / handle
