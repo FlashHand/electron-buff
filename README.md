@@ -14,12 +14,6 @@ Electron enhancement utilities for electron-vite projects.
 yarn add electron-buff
 ```
 
-## TODO
-
-1. 通过 Proxy 实现 XPC 调用：发送通过调用 class 的 function 实现，监听通过 class 的函数名在实例化过程中自动注册，无需手动调用 `handle`/`send` 并传入字符串句柄，可实现代码自动补全。
-2. 重复监听处理优化：对同一 handleName 的重复注册进行检测与策略处理（覆盖、警告或抛错）。
-3. 多进程广播支持：支持向多个已注册的进程同时广播消息。
-
 
 ## Module Overview
 
