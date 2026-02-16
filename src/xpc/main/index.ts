@@ -1,4 +1,7 @@
-export { xpcCenter } from './xpc-center.helper';
-export { xpcMain } from './xpc-main.helper';
-export { XpcTask } from './xpc-task.helper';
+export { xpcCenter } from './xpcCenter.helper';
+export { xpcMain } from './xpcMain.helper';
+export { XpcTask } from './xpcTask.helper';
+export { XpcMainHandler } from './xpcMain.handler';
+export { createXpcMainEmitter } from './xpcMain.emitter';
 export type { XpcPayload } from '../shared/xpc.type';
+export type { XpcEmitterOf } from '../shared/xpcHandler.type';

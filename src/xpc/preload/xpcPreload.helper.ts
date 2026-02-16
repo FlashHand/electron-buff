@@ -1,6 +1,6 @@
 import { contextBridge, ipcRenderer } from 'electron';
 import { XpcPayload, XpcRendererApi } from '../shared/xpc.type';
-import { generateXpcId } from './xpc-id.helper';
+import { generateXpcId } from './xpcId.helper';
 
 const XPC_REGISTER = '__xpc_register__';
 const XPC_EXEC = '__xpc_exec__';

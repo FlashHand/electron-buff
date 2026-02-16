@@ -2,7 +2,7 @@ import { contextBridge, ipcRenderer } from 'electron';
 
 // src/xpc/preload/xpcPreload.helper.ts
 
-// src/xpc/preload/xpc-id.helper.ts
+// src/xpc/preload/xpcId.helper.ts
 var prefix = Math.random().toString(36).slice(2, 8);
 var counter = 0;
 var generateXpcId = () => {
@@ -72,6 +72,49 @@ if (process.contextIsolated) {
   globalThis.xpcRenderer = xpcRenderer;
 }
 
-export { xpcHandlers, xpcRenderer };
+// src/xpc/shared/xpcHandler.type.ts
+var XPC_HANDLER_PREFIX = "xpc:";
+var buildXpcChannel = (className, methodName) => {
+  return `${XPC_HANDLER_PREFIX}${className}/${methodName}`;
+};
+var getHandlerMethodNames = (prototype) => {
+  const names = [];
+  const keys = Object.getOwnPropertyNames(prototype);
+  for (const key of keys) {
+    if (key === "constructor") continue;
+    const descriptor = Object.getOwnPropertyDescriptor(prototype, key);
+    if (descriptor && typeof descriptor.value === "function") {
+      names.push(key);
+    }
+  }
+  return names;
+};
+
+// src/xpc/preload/xpcPreload.handler.ts
+var XpcPreloadHandler = class {
+  constructor() {
+    const className = this.constructor.name;
+    const methodNames = getHandlerMethodNames(Object.getPrototypeOf(this));
+    for (const methodName of methodNames) {
+      const channel = buildXpcChannel(className, methodName);
+      const method = this[methodName].bind(this);
+      xpcRenderer.handle(channel, async (payload) => {
+        return await method(payload.params);
+      });
+    }
+  }
+};
+
+// src/xpc/preload/xpcPreload.emitter.ts
+var createXpcPreloadEmitter = (className) => {
+  return new Proxy({}, {
+    get(_target, prop) {
+      const channel = buildXpcChannel(className, prop);
+      return (params) => xpcRenderer.send(channel, params);
+    }
+  });
+};
+
+export { XpcPreloadHandler, createXpcPreloadEmitter, xpcHandlers, xpcRenderer };
 //# sourceMappingURL=index.mjs.map
 //# sourceMappingURL=index.mjs.map

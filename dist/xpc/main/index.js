@@ -3,7 +3,7 @@
 var electron = require('electron');
 var rigFoundation = require('rig-foundation');
 
-// src/xpc/main/xpc-center.helper.ts
+// src/xpc/main/xpcCenter.helper.ts
 var XpcTask = class {
   constructor(payload) {
     this.id = payload.id;
@@ -33,7 +33,7 @@ var XpcTask = class {
   }
 };
 
-// src/xpc/main/xpc-id.helper.ts
+// src/xpc/main/xpcId.helper.ts
 var prefix = Math.random().toString(36).slice(2, 8);
 var counter = 0;
 var generateXpcId = () => {
@@ -72,7 +72,7 @@ var PathMainHelper = class {
 };
 var pathMainHelper = new PathMainHelper();
 
-// src/xpc/main/xpc-main.helper.ts
+// src/xpc/main/xpcMain.helper.ts
 var XpcMain = class {
   constructor() {
     this.handlers = /* @__PURE__ */ new Map();
@@ -102,7 +102,7 @@ var XpcMain = class {
 };
 var xpcMain = new XpcMain();
 
-// src/xpc/main/xpc-center.helper.ts
+// src/xpc/main/xpcCenter.helper.ts
 var XPC_REGISTER = "__xpc_register__";
 var XPC_EXEC = "__xpc_exec__";
 var XPC_FINISH = "__xpc_finish__";
@@ -178,7 +178,52 @@ var XpcCenter = class {
 };
 var xpcCenter = new XpcCenter();
 
+// src/xpc/shared/xpcHandler.type.ts
+var XPC_HANDLER_PREFIX = "xpc:";
+var buildXpcChannel = (className, methodName) => {
+  return `${XPC_HANDLER_PREFIX}${className}/${methodName}`;
+};
+var getHandlerMethodNames = (prototype) => {
+  const names = [];
+  const keys = Object.getOwnPropertyNames(prototype);
+  for (const key of keys) {
+    if (key === "constructor") continue;
+    const descriptor = Object.getOwnPropertyDescriptor(prototype, key);
+    if (descriptor && typeof descriptor.value === "function") {
+      names.push(key);
+    }
+  }
+  return names;
+};
+
+// src/xpc/main/xpcMain.handler.ts
+var XpcMainHandler = class {
+  constructor() {
+    const className = this.constructor.name;
+    const methodNames = getHandlerMethodNames(Object.getPrototypeOf(this));
+    for (const methodName of methodNames) {
+      const channel = buildXpcChannel(className, methodName);
+      const method = this[methodName].bind(this);
+      xpcMain.handle(channel, async (payload) => {
+        return await method(payload.params);
+      });
+    }
+  }
+};
+
+// src/xpc/main/xpcMain.emitter.ts
+var createXpcMainEmitter = (className) => {
+  return new Proxy({}, {
+    get(_target, prop) {
+      const channel = buildXpcChannel(className, prop);
+      return (params) => xpcMain.send(channel, params);
+    }
+  });
+};
+
+exports.XpcMainHandler = XpcMainHandler;
 exports.XpcTask = XpcTask;
+exports.createXpcMainEmitter = createXpcMainEmitter;
 exports.xpcCenter = xpcCenter;
 exports.xpcMain = xpcMain;
 //# sourceMappingURL=index.js.map
