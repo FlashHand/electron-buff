@@ -41,15 +41,17 @@ declare class XpcRendererHandler {
 /**
  * Helper: checks if a function type has at most 1 parameter.
  * Returns the function type itself if valid, `never` otherwise.
+ * Uses Parameters<> length check to avoid contravariance issues
+ * where (p: any) => any extends () => any in TypeScript.
  */
-type AssertSingleParam<F> = F extends () => any ? F : F extends (p: any) => any ? F extends (p: any, q: any, ...rest: any[]) => any ? never : F : never;
+type AssertSingleParam<F> = F extends (...args: any[]) => any ? Parameters<F>['length'] extends 0 | 1 ? F : never : never;
 /**
  * Utility type: extracts the method signatures from a handler class,
  * turning each method into an emitter-compatible signature.
  * Methods with 2+ parameters are mapped to `never`, causing a compile error on use.
  */
 type XpcEmitterOf<T> = {
-    [K in keyof T as T[K] extends (...args: any[]) => any ? K : never]: AssertSingleParam<T[K]> extends never ? never : T[K] extends (params: infer P) => any ? (params: P) => Promise<any> : () => Promise<any>;
+    [K in keyof T as T[K] extends (...args: any[]) => any ? K : never]: AssertSingleParam<T[K]> extends never ? never : T[K] extends (params: infer P) => any ? Parameters<T[K]>['length'] extends 0 ? () => Promise<any> : (params: P) => Promise<any> : () => Promise<any>;
 };
 
 /**

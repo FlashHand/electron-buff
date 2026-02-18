@@ -37,12 +37,13 @@ export type XpcHandlerMethod = (() => Promise<any>) | ((params: any) => Promise<
 /**
  * Helper: checks if a function type has at most 1 parameter.
  * Returns the function type itself if valid, `never` otherwise.
+ * Uses Parameters<> length check to avoid contravariance issues
+ * where (p: any) => any extends () => any in TypeScript.
  */
 type AssertSingleParam<F> =
-  F extends () => any ? F :
-  F extends (p: any) => any ?
-    F extends (p: any, q: any, ...rest: any[]) => any ? never : F
-  : never;
+  F extends (...args: any[]) => any
+    ? Parameters<F>['length'] extends 0 | 1 ? F : never
+    : never;
 
 /**
  * Utility type: extracts the method signatures from a handler class,
@@ -54,6 +55,8 @@ export type XpcEmitterOf<T> = {
     AssertSingleParam<T[K]> extends never
       ? never
       : T[K] extends (params: infer P) => any
-        ? (params: P) => Promise<any>
+        ? Parameters<T[K]>['length'] extends 0
+          ? () => Promise<any>
+          : (params: P) => Promise<any>
         : () => Promise<any>;
 };
